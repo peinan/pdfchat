@@ -48,7 +48,7 @@ def open_file(file_path: str) -> str:
     elif file_path.suffix == ".pdf":
         text = "WARNING: PDF file is not supported yet."
     else:
-        gr.exit("Unsupported file type.")
+        text = "WARNING: Unsupported file format."
 
     return text
 
