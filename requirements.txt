@@ -7,7 +7,6 @@
 #   all-features: false
 #   with-sources: false
 
--e file:.
 aiofiles==23.2.1
     # via gradio
 aiohttp==3.9.3
