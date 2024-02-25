@@ -16,3 +16,4 @@ gradio_cached_examples
 local_qdrant
 
 .vscode
+history.json

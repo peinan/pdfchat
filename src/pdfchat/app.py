@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import time
@@ -57,6 +58,9 @@ class Chat:
     def to_list(self) -> list[str, str]:
         return [self.query, self.response]
 
+    def to_dict(self) -> dict[str, str]:
+        return {"query": self.query, "response": self.response}
+
 
 @dataclass
 class ChatHistory:
@@ -79,6 +83,11 @@ class ChatHistory:
 
     def clear_last_response(self):
         self.history[-1].response = ""
+
+    def to_json(self) -> str:
+        return json.dumps(
+            [chat.to_dict() for chat in self.history], ensure_ascii=False, indent=4
+        )
 
 
 def open_file(file_path: str) -> str:
@@ -168,6 +177,15 @@ def main(history: ChatHistory, query: str, file_path: str | None) -> ChatHistory
         yield history
 
 
+def save_chat_history(history: ChatHistory = []) -> str:
+    history = ChatHistory(history)
+    file_path = Path("history.json")
+    with open(file_path, "w") as f:
+        f.write(history.to_json())
+
+    return str(file_path)
+
+
 with gr.Blocks() as app:
     gr.Markdown("# Chat with PDF")
     with gr.Row():
@@ -181,6 +199,7 @@ with gr.Blocks() as app:
                 label="Document",
             )
             with gr.Accordion("Parameters", open=False):
+                gr.Markdown("⚠️Warning⚠️ Not implemented yet")
                 temperature_slider = gr.Slider(
                     minimum=0.1, maximum=1.0, value=0.5, label="Temperature"
                 )
@@ -189,6 +208,8 @@ with gr.Blocks() as app:
                     minimum=0.1, maximum=1.0, value=0.5, label="Top P"
                 )
                 top_p_slider.change(lambda x: x, [top_p_slider])
+            with gr.Accordion("Save Chat History", open=False):
+                history_file = gr.File()
         with gr.Column(scale=65):
             chatbot = gr.Chatbot(
                 bubble_full_width=False,
@@ -215,6 +236,10 @@ with gr.Blocks() as app:
                     fn=main,
                     inputs=[chatbot, text_box, file_box],
                     outputs=chatbot,
+                ).then(
+                    lambda history: save_chat_history(history),
+                    inputs=[chatbot],
+                    outputs=history_file,
                 )
     examples = gr.Examples(
         examples=[
