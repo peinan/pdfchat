@@ -22,6 +22,7 @@ annotated-types==0.6.0
 anyio==4.3.0
     # via httpx
     # via langchain-core
+    # via openai
     # via starlette
 asttokens==2.4.1
     # via icecream
@@ -51,6 +52,8 @@ dataclasses-json==0.6.4
     # via langchain-community
 decorator==5.1.1
     # via ipython
+distro==1.9.0
+    # via openai
 executing==2.0.1
     # via icecream
     # via stack-data
@@ -75,17 +78,30 @@ gradio-client==0.10.1
     # via gradio
 gradio-pdf==0.0.5
     # via pdfchat
+grpcio==1.62.0
+    # via grpcio-tools
+    # via qdrant-client
+grpcio-tools==1.62.0
+    # via qdrant-client
 h11==0.14.0
     # via httpcore
     # via uvicorn
+h2==4.1.0
+    # via httpx
+hpack==4.0.0
+    # via h2
 httpcore==1.0.4
     # via httpx
 httpx==0.27.0
     # via gradio
     # via gradio-client
+    # via openai
+    # via qdrant-client
 huggingface-hub==0.20.3
     # via gradio
     # via gradio-client
+hyperframe==6.0.1
+    # via h2
 icecream==2.1.3
 idna==3.6
     # via anyio
@@ -150,6 +166,9 @@ numpy==1.26.4
     # via langchain-community
     # via matplotlib
     # via pandas
+    # via qdrant-client
+openai==1.12.0
+    # via pdfchat
 orjson==3.9.15
     # via gradio
     # via langsmith
@@ -171,8 +190,12 @@ pexpect==4.9.0
 pillow==10.2.0
     # via gradio
     # via matplotlib
+portalocker==2.8.2
+    # via qdrant-client
 prompt-toolkit==3.0.43
     # via ipython
+protobuf==4.25.3
+    # via grpcio-tools
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
@@ -183,6 +206,8 @@ pydantic==2.6.2
     # via langchain
     # via langchain-core
     # via langsmith
+    # via openai
+    # via qdrant-client
 pydantic-core==2.16.3
     # via pydantic
 pydub==0.25.1
@@ -193,6 +218,8 @@ pygments==2.17.2
     # via rich
 pyparsing==3.1.1
     # via matplotlib
+pypdf==4.0.2
+    # via pdfchat
 python-dateutil==2.8.2
     # via matplotlib
     # via pandas
@@ -206,15 +233,21 @@ pyyaml==6.0.1
     # via langchain
     # via langchain-community
     # via langchain-core
+qdrant-client==1.7.3
+    # via pdfchat
 referencing==0.33.0
     # via jsonschema
     # via jsonschema-specifications
+regex==2023.12.25
+    # via tiktoken
 requests==2.31.0
     # via huggingface-hub
     # via langchain
     # via langchain-community
     # via langchain-core
     # via langsmith
+    # via pdfchat
+    # via tiktoken
 rich==13.7.0
     # via typer
 rpds-py==0.18.0
@@ -224,6 +257,8 @@ ruff==0.2.2
     # via gradio
 semantic-version==2.10.0
     # via gradio
+setuptools==69.1.1
+    # via grpcio-tools
 shellingham==1.5.4
     # via typer
 six==1.16.0
@@ -232,6 +267,7 @@ six==1.16.0
 sniffio==1.3.0
     # via anyio
     # via httpx
+    # via openai
 sqlalchemy==2.0.27
     # via langchain
     # via langchain-community
@@ -243,12 +279,15 @@ tenacity==8.2.3
     # via langchain
     # via langchain-community
     # via langchain-core
+tiktoken==0.6.0
+    # via pdfchat
 tomlkit==0.12.0
     # via gradio
 toolz==0.12.1
     # via altair
 tqdm==4.66.2
     # via huggingface-hub
+    # via openai
 traitlets==5.14.1
     # via ipython
     # via matplotlib-inline
@@ -259,6 +298,7 @@ typing-extensions==4.9.0
     # via gradio
     # via gradio-client
     # via huggingface-hub
+    # via openai
     # via pydantic
     # via pydantic-core
     # via sqlalchemy
@@ -269,6 +309,7 @@ typing-inspect==0.9.0
 tzdata==2024.1
     # via pandas
 urllib3==2.2.1
+    # via qdrant-client
     # via requests
 uvicorn==0.27.1
     # via gradio

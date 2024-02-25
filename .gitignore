@@ -11,3 +11,8 @@ wheels/
 
 .DS_Store
 gradio_cached_examples
+
+.env
+local_qdrant
+
+.vscode

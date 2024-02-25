@@ -1,12 +1,52 @@
+import os
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
 import gradio as gr
+import requests
 from gradio_pdf import PDF
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores.qdrant import Qdrant
 from loguru import logger
+from pypdf import PdfReader
 
-MODEL_CALM2 = "cyberagent/calm2"
+MODEL_CALM2 = "cyberagent/calm2-7b-chat"
+text_splitter = CharacterTextSplitter(
+    separator="\n\n",
+    chunk_size=1000,
+    chunk_overlap=0,
+)
+QDRANT_MODE = "local"
+if QDRANT_MODE == "local":
+    QDRANT_CLIENT_CONFIG = {
+        "path": "./local_qdrant",
+    }
+elif QDRANT_MODE == "cloud":
+    QDRANT_CLIENT_CONFIG = {
+        "url": os.environ.get("QDRANT_URL"),
+        "api_key": os.environ.get("QDRANT_API_KEY"),
+    }
+    if not QDRANT_CLIENT_CONFIG["url"] or not QDRANT_CLIENT_CONFIG["api_key"]:
+        raise ValueError(
+            "Please set the QDRANT_URL and QDRANT_API_KEY environment variables."
+        )
+COLLECTION_NAME = "pdfchat"
+PROMPT_TEMPLATE = """以下の文脈を利用して、最後の質問に答えなさい。
+答えがわからない場合は、わからないと答えてください。
+
+【文脈】
+{context}
+
+【質問】
+{question}
+
+【答え】
+"""
+LLM_URL = os.environ.get("PDFCHAT_LLM_URL")
 
 
 @dataclass
@@ -46,34 +86,85 @@ def open_file(file_path: str) -> str:
     if file_path.suffix == ".txt":
         text = file_path.read_text()
     elif file_path.suffix == ".pdf":
-        text = "WARNING: PDF file is not supported yet."
+        text = parse_pdf(file_path)
     else:
         text = "WARNING: Unsupported file format."
 
     return text
 
 
-def get_response(query: str, document: str | None) -> str:
-    response = ""
-    if not document:
-        response = "No document is uploaded. Please upload a document."
-    else:
-        response = f"Your document: {document}"
+def parse_pdf(file_path: Path, backend="pypdf") -> str:
+    reader = PdfReader(file_path)
+    contents = "".join([page.extract_text() for page in reader.pages])
+
+    contents = re.sub(r"[ 　]+\n[ 　]+", "\n", contents)
+    contents = re.sub(r"[ 　]+\n", "\n", contents)
+    contents = re.sub(r"\n[ 　]+", "\n", contents)
+    contents = re.sub(r"[^。\n]\n", "", contents)
+    contents = re.sub(r"[\w、（）]\n[\w、（）]", "", contents)
+    contents = re.sub(r"\n{3,}", "\n\n", contents)
+
+    return contents
+
+
+def get_response(prompt: str) -> str:
+    response = requests.post(
+        LLM_URL,
+        json={
+            "prompt": prompt,
+            "max_new_tokens": 2048,
+        },
+    ).json()
 
     return response
 
 
-def bot(history: ChatHistory, query: str, file_path: str) -> ChatHistory:
+def retrieve_relevant_documents(query: str, document: str | None) -> list[str]:
+    if not document:
+        return "No document is uploaded. Please upload a document."
+
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    if not OPENAI_API_KEY:
+        raise ValueError("Please set the OPENAI_API_KEY environment variable.")
+
+    documents = text_splitter.split_text(document)
+    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+
+    db = Qdrant.from_texts(
+        texts=documents,
+        embedding=embeddings,
+        **QDRANT_CLIENT_CONFIG,
+    )
+    retriever = db.as_retriever()
+    relevant_documents = [
+        doc.page_content for doc in retriever.get_relevant_documents(query)
+    ]
+
+    return relevant_documents
+
+
+def build_prompt(query: str, context: str) -> str:
+    prompt = PromptTemplate(
+        template=PROMPT_TEMPLATE,
+        input_variables=["context", "question"],
+    ).format(context=context, question=query)
+
+    return prompt
+
+
+def main(history: ChatHistory, query: str, file_path: str | None) -> ChatHistory:
     history = ChatHistory(history)
     document = open_file(file_path) if file_path else None
-    response = get_response(query, document)
-    history.add_chat(Chat(query=query, response=response))
+    relevant_documents = retrieve_relevant_documents(query=query, document=document)
+    prompt = build_prompt(query=query, context="\n\n".join(relevant_documents))
+    response_message = get_response(prompt)["message"]
+    history.add_chat(Chat(query=query, response=response_message))
     logger.info(history)
 
     history.clear_last_response()
-    for char in response:
+    for char in response_message:
         history[-1].response += char
-        time.sleep(0.02)
+        time.sleep(0.01)
         yield history
 
 
@@ -121,7 +212,7 @@ with gr.Blocks() as app:
                 )
                 submit_button = gr.Button("Submit", variant="primary", size="sm")
                 submit = submit_button.click(
-                    fn=bot,
+                    fn=main,
                     inputs=[chatbot, text_box, file_box],
                     outputs=chatbot,
                 )
