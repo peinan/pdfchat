@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -36,6 +37,9 @@ class ChatHistory:
     def add_chat(self, chat: Chat):
         self.history.append(chat)
 
+    def clear_last_response(self):
+        self.history[-1].response = ""
+
 
 def open_file(file_path: str) -> str:
     file_path = Path(file_path)
@@ -49,17 +53,28 @@ def open_file(file_path: str) -> str:
     return text
 
 
+def get_response(query: str, document: str | None) -> str:
+    response = ""
+    if not document:
+        response = "No document is uploaded. Please upload a document."
+    else:
+        response = f"Your document: {document}"
+
+    return response
+
+
 def bot(history: ChatHistory, query: str, file_path: str) -> ChatHistory:
     history = ChatHistory(history)
-    if not file_path:
-        history.add_chat(Chat(query=query, response=None))
-        return history
-    document = open_file(file_path)
-    history.add_chat(Chat(query=query, response=document))
+    document = open_file(file_path) if file_path else None
+    response = get_response(query, document)
+    history.add_chat(Chat(query=query, response=response))
     logger.info(history)
 
-    # TODO: use streaming inference
-    return history
+    history.clear_last_response()
+    for char in response:
+        history[-1].response += char
+        time.sleep(0.02)
+        yield history
 
 
 with gr.Blocks() as app:
@@ -122,4 +137,4 @@ with gr.Blocks() as app:
         fn=lambda model_name, document: None,
     )
 
-app.queue().launch(debug=True)
+app.queue().launch()
