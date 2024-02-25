@@ -10,4 +10,26 @@ pinned: true
 
 # pdfchat
 
-Describe your project here.
+Chat with a PDF document.
+
+## Development
+
+### Prerequisites
+
+pre-commit
+
+```bash
+pre-commit install
+```
+
+rye
+
+```bash
+rye sync
+```
+
+### Run
+
+```bash
+rye run server
+```
