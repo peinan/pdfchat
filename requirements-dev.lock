@@ -122,6 +122,8 @@ langsmith==0.1.8
     # via langchain
     # via langchain-community
     # via langchain-core
+loguru==0.7.2
+    # via pdfchat
 markdown-it-py==3.0.0
     # via rich
 markupsafe==2.1.5
