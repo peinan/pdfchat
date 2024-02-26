@@ -121,7 +121,7 @@ def get_response(prompt: str) -> str:
         LLM_URL,
         json={
             "prompt": prompt,
-            "max_new_tokens": 2048,
+            "max_new_tokens": 3072,
         },
     ).json()
 
