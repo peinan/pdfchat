@@ -8,9 +8,9 @@ ENV HOME=/home/user \
 
 WORKDIR $HOME/app
 
-RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install --no-cache-dir --upgrade pip
 COPY --chown=user . $HOME/app
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 7860
 ENV GRADIO_SERVER_NAME="0.0.0.0"
