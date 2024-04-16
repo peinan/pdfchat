@@ -4,7 +4,7 @@ emoji: 📄
 colorFrom: blue
 colorTo: green
 sdk: docker
-app_file: src/pdfchat/app.py
+app_port: 7860
 pinned: true
 ---
 
