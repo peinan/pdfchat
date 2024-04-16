@@ -1,8 +1,8 @@
 FROM python:3.11-slim
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY . .
+COPY --chown=user:user . .
 RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 7860
 ENV GRADIO_SERVER_NAME="0.0.0.0"
