@@ -246,7 +246,11 @@ with gr.Blocks() as app:
             [
                 "data/sample.pdf",
                 "胃がん手術の説明書の要点を箇条書きで要約してください",
-            ]
+            ],
+            [
+                "data/sample2.pdf",
+                "面会時間について教えてください",
+            ],
         ],
         inputs=[file_box, text_box],
         outputs=[],
