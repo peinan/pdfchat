@@ -3,7 +3,7 @@ title: PDF Chat
 emoji: 📄
 colorFrom: blue
 colorTo: green
-sdk: gradio
+sdk: docker
 app_file: src/pdfchat/app.py
 pinned: true
 ---
